@@ -42,7 +42,7 @@ fn main() -> ! {
     // Configure the syst timer to trigger an update every second
     let mut timer = Timer::syst(cp.SYST, &clocks).counter_hz();
     timer.start(1.Hz()).unwrap();
-
+    let a = 123;
     // Wait for the timer to trigger an update and change the state of the LED
     loop {
         block!(timer.wait()).unwrap();
