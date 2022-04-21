@@ -7,16 +7,6 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "cwd": "${workspaceFolder}",
-            "executable": "./target/thumbv7m-none-eabi/debug/stm32",
-            "name": "Debug with ST-Link",
-            "request": "launch",
-            "type": "cortex-debug",
-            "runToEntryPoint": "main",
-            "showDevDebugOutput": "none",
-            "servertype": "stlink"
-        },
-        {
             "type": "cortex-debug",
             "request": "launch",
             "name": "Debug (QEMU)",
@@ -28,7 +18,7 @@
             /* Run `cargo build --example hello` and uncomment this line to run semi-hosting example */
             //"executable": "./target/thumbv7m-none-eabi/debug/examples/hello",
             "cpu": "cortex-m3",
-            "machine": "stm32f103c8t6",
+            "machine": "lm3s811evb",
         },
         {
             /* Configuration for the STM32F303 Discovery board */
@@ -47,7 +37,7 @@
                 "interface/stlink-v2-1.cfg",
                 "target/stm32f1x.cfg"
             ],
-            "svdFile": "${workspaceRoot}/.vscode/STM32F103.svd",
+            // "svdFile": "${workspaceRoot}/.vscode/STM32F103.svd",
             "swoConfig": {
                 "enabled": true,
                 "cpuFrequency": 8000000,
@@ -58,7 +48,7 @@
                 ]
             },
             "gdbpath": "gdb-multiarch",
-            "showDevDebugOutput": true,
+            "showDevDebugOutput":"raw",
         }
     ]
 }
