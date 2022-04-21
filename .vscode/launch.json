@@ -44,8 +44,8 @@
             // "executable": "./target/thumbv7em-none-eabihf/debug/examples/itm",
             "device": "STM32F103C8T6",
             "configFiles": [
-                "/tmp/interface/stlink-v2-1.cfg",
-                "/tmp/target/stm32f1x.cfg"
+                "interface/stlink-v2-1.cfg",
+                "target/stm32f1x.cfg"
             ],
             "svdFile": "${workspaceRoot}/.vscode/STM32F103.svd",
             "swoConfig": {
@@ -56,7 +56,9 @@
                 "decoders": [
                     { "type": "console", "label": "ITM", "port": 0 }
                 ]
-            }
+            },
+            "gdbpath": "gdb-multiarch",
+            "showDevDebugOutput": true,
         }
     ]
 }

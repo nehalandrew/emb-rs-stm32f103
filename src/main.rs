@@ -18,6 +18,7 @@ use stm32f1xx_hal::{pac, prelude::*, timer::Timer};
 
 #[entry]
 fn main() -> ! {
+    let x = 123;
     // Get access to the core peripherals from the cortex-m crate
     let cp = cortex_m::Peripherals::take().unwrap();
     // Get access to the device specific peripherals from the peripheral access crate
