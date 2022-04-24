@@ -11,20 +11,17 @@ use stm32f1xx_hal::{
     pac,
     prelude::*,
     time::ms,
-    timer::{Channel, Tim2NoRemap},
+    timer::{Channel, Tim2NoRemap, Timer},
 };
 
 #[entry]
 fn main() -> ! {
+    let cp = cortex_m::Peripherals::take().unwrap();
     let p = pac::Peripherals::take().unwrap();
-
     let mut flash = p.FLASH.constrain();
     let rcc = p.RCC.constrain();
-
     let clocks = rcc.cfgr.freeze(&mut flash.acr);
-
     let mut afio = p.AFIO.constrain();
-
     let mut gpioa = p.GPIOA.split();
     // let mut gpiob = p.GPIOB.split();
 
@@ -48,12 +45,12 @@ fn main() -> ! {
     // let c3 = gpiob.pb8.into_alternate_push_pull(&mut gpiob.crh);
     // let c4 = gpiob.pb9.into_alternate_push_pull(&mut gpiob.crh);
 
-    //let mut pwm =
-    //    Timer::new(p.TIM2, &clocks).pwm_hz::<Tim2NoRemap, _, _>(pins, &mut afio.mapr, 1.kHz());
+    // let mut pwm =
+    // Timer::new(p.TIM2, &clocks).pwm_hz::<Tim2NoRemap, _, _>(pins, &mut afio.mapr, 50.Hz());
     // or
     let mut pwm = p
         .TIM2
-        .pwm_hz::<Tim2NoRemap, _, _>(pins, &mut afio.mapr, 1.kHz(), &clocks);
+        .pwm_hz::<Tim2NoRemap, _, _>(pins, &mut afio.mapr, 2.Hz(), &clocks);
 
     // Enable clock on each of the channels
     pwm.enable(Channel::C1);
@@ -63,14 +60,14 @@ fn main() -> ! {
     //// Operations affecting all defined channels on the Timer
 
     // Adjust period to 0.5 seconds
-    pwm.set_period(ms(500).into_rate());
+    // pwm.set_period(ms(20).into_rate());
 
-    asm::bkpt();
+    // asm::bkpt();
 
     // Return to the original frequency
-    pwm.set_period(1.kHz());
+    // pwm.set_period(2.Hz());
 
-    asm::bkpt();
+    // asm::bkpt();
 
     let max = pwm.get_max_duty();
 
@@ -78,37 +75,45 @@ fn main() -> ! {
     //// the Pwm object or via dereferencing to the pin.
 
     // Use the Pwm object to set C3 to full strength
-    pwm.set_duty(Channel::C3, max);
+    // pwm.set_duty(Channel::C3, max);
 
-    asm::bkpt();
+    // asm::bkpt();
 
     // Use the Pwm object to set C3 to be dim
-    pwm.set_duty(Channel::C3, max / 4);
+    // pwm.set_duty(Channel::C3, max / 4);
 
-    asm::bkpt();
+    // asm::bkpt();
 
     // Use the Pwm object to set C3 to be zero
-    pwm.set_duty(Channel::C3, 0);
+    // pwm.set_duty(Channel::C3, 0);
 
-    asm::bkpt();
+    // asm::bkpt();
 
     // Extract the PwmChannel for C3
-    let mut pwm_channel = pwm.split().2;
+    // let mut pwm_channel = pwm.split().2;
 
     // Use the PwmChannel object to set C3 to be full strength
-    pwm_channel.set_duty(max);
+    // pwm_channel.set_duty(max);
 
-    asm::bkpt();
+    // asm::bkpt();
 
     // Use the PwmChannel object to set C3 to be dim
-    pwm_channel.set_duty(max / 4);
+    // pwm_channel.set_duty(max / 4);
 
-    asm::bkpt();
+    // asm::bkpt();
 
     // Use the PwmChannel object to set C3 to be zero
-    pwm_channel.set_duty(0);
+    // pwm_channel.set_duty(0);
 
-    asm::bkpt();
-
-    loop {}
+    // asm::bkpt();
+    let mut delay = cp.SYST.delay(&clocks);
+    // pwm.set_duty(Channel::C1, max);
+    // pwm.set_duty(Channel::C2, max);
+    // pwm.set_duty(Channel::C3, max);
+    loop {
+        pwm.set_duty(Channel::C3, max);
+        delay.delay_ms(1000u16);
+        pwm.set_duty(Channel::C3, 0);
+        delay.delay_ms(1000u16);
+    }
 }
