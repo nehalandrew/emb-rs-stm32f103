@@ -6,13 +6,9 @@
 use panic_halt as _;
 
 use cortex_m::asm;
+use stm32f1xx_hal::{pac, prelude::*, timer::Timer};
+
 use cortex_m_rt::entry;
-use stm32f1xx_hal::{
-    pac,
-    prelude::*,
-    time::ms,
-    timer::{Channel, Tim2NoRemap},
-};
 
 #[entry]
 fn main() -> ! {
@@ -24,91 +20,41 @@ fn main() -> ! {
     let clocks = rcc.cfgr.freeze(&mut flash.acr);
 
     let mut afio = p.AFIO.constrain();
+    let gpioa = p.GPIOA.split();
+    let mut gpiob = p.GPIOB.split();
+    let (_pa15, _pb3, pb4) = afio.mapr.disable_jtag(gpioa.pa15, gpiob.pb3, gpiob.pb4);
 
-    let mut gpioa = p.GPIOA.split();
-    // let mut gpiob = p.GPIOB.split();
+    // TIM4
+    // #FIXME: try, it shouldn't work
+    let pb6 = gpiob.pb6.into_alternate_open_drain(&mut gpiob.crl);
+    let pb7 = gpiob.pb7.into_alternate_open_drain(&mut gpiob.crl);
 
-    // TIM2
-    let c1 = gpioa.pa0.into_alternate_push_pull(&mut gpioa.crl);
-    let c2 = gpioa.pa1.into_alternate_push_pull(&mut gpioa.crl);
-    let c3 = gpioa.pa2.into_alternate_push_pull(&mut gpioa.crl);
-    // If you don't want to use all channels, just leave some out
-    // let c4 = gpioa.pa3.into_alternate_push_pull(&mut gpioa.crl);
-    let pins = (c1, c2, c3);
-
-    // TIM3
-    // let c1 = gpioa.pa6.into_alternate_push_pull(&mut gpioa.crl);
-    // let c2 = gpioa.pa7.into_alternate_push_pull(&mut gpioa.crl);
-    // let c3 = gpiob.pb0.into_alternate_push_pull(&mut gpiob.crl);
-    // let c4 = gpiob.pb1.into_alternate_push_pull(&mut gpiob.crl);
-
-    // TIM4 (Only available with the "medium" density feature)
-    // let c1 = gpiob.pb6.into_alternate_push_pull(&mut gpiob.crl);
-    // let c2 = gpiob.pb7.into_alternate_push_pull(&mut gpiob.crl);
-    // let c3 = gpiob.pb8.into_alternate_push_pull(&mut gpiob.crh);
-    // let c4 = gpiob.pb9.into_alternate_push_pull(&mut gpiob.crh);
-
-    //let mut pwm =
-    //    Timer::new(p.TIM2, &clocks).pwm_hz::<Tim2NoRemap, _, _>(pins, &mut afio.mapr, 1.kHz());
-    // or
-    let mut pwm = p
-        .TIM2
-        .pwm_hz::<Tim2NoRemap, _, _>(pins, &mut afio.mapr, 1.kHz(), &clocks);
-
-    // Enable clock on each of the channels
-    pwm.enable(Channel::C1);
-    pwm.enable(Channel::C2);
-    pwm.enable(Channel::C3);
-
-    //// Operations affecting all defined channels on the Timer
-
-    // Adjust period to 0.5 seconds
-    pwm.set_period(ms(500).into_rate());
-
-    asm::bkpt();
-
-    // Return to the original frequency
-    pwm.set_period(1.kHz());
-
-    asm::bkpt();
+    let pwm = Timer::new(p.TIM4, &clocks).pwm_hz((pb6, pb7), &mut afio.mapr, 1.Hz());
 
     let max = pwm.get_max_duty();
 
-    //// Operations affecting single channels can be accessed through
-    //// the Pwm object or via dereferencing to the pin.
+    let mut pwm_channels = pwm.split();
 
-    // Use the Pwm object to set C3 to full strength
-    pwm.set_duty(Channel::C3, max);
+    // Enable the individual channels
+    pwm_channels.0.enable();
+    pwm_channels.1.enable();
 
-    asm::bkpt();
+    // full
+    pwm_channels.0.set_duty(max);
+    pwm_channels.1.set_duty(max);
 
-    // Use the Pwm object to set C3 to be dim
-    pwm.set_duty(Channel::C3, max / 4);
+    // asm::bkpt();
 
-    asm::bkpt();
+    // dim
+    // pwm_channels.1.set_duty(max / 4);
 
-    // Use the Pwm object to set C3 to be zero
-    pwm.set_duty(Channel::C3, 0);
+    // asm::bkpt();
 
-    asm::bkpt();
+    // zero
+    // pwm_channels.0.set_duty(0);
+    // pwm_channels.1.set_duty(0);
 
-    // Extract the PwmChannel for C3
-    let mut pwm_channel = pwm.split().2;
-
-    // Use the PwmChannel object to set C3 to be full strength
-    pwm_channel.set_duty(max);
-
-    asm::bkpt();
-
-    // Use the PwmChannel object to set C3 to be dim
-    pwm_channel.set_duty(max / 4);
-
-    asm::bkpt();
-
-    // Use the PwmChannel object to set C3 to be zero
-    pwm_channel.set_duty(0);
-
-    asm::bkpt();
+    // asm::bkpt();
 
     loop {}
 }
