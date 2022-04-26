@@ -35,8 +35,8 @@ fn main() -> ! {
     let pwm = Timer::new(p.TIM4, &clocks).pwm_hz((pb6, pb7), &mut afio.mapr, 50.Hz());
 
     let maxd = pwm.get_max_duty(); // 53333
-    let min = pwm.get_max_duty() / 31; // 1720
-    let max = pwm.get_max_duty() / 9; // 5925
+    let min = 2272 as u16; // pwm.get_max_duty() / 31; // 1720
+    let max = 50250 as u16; // pwm.get_max_duty() / 9; // 5925
 
     // hprintln!("max duty: {}", maxd);
     // hprintln!("max duty: {}", min);
@@ -65,11 +65,11 @@ fn main() -> ! {
         // for i in min..=max {
         pwm_channels.0.set_duty(max);
         pwm_channels.1.set_duty(max);
-        delay.delay_ms(5000u16);
+        delay.delay_ms(10000u16);
         // }
         pwm_channels.0.set_duty(min);
         pwm_channels.1.set_duty(min);
-        delay.delay_ms(5000u16);
+        delay.delay_ms(10000u16);
         // delay.delay_ms(1000u16);
         // pwm_channels.0.set_duty(0);
         // pwm_channels.1.set_duty(0);
